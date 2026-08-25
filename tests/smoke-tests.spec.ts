@@ -1,5 +1,6 @@
 import { RequestHandler } from "@/utils/request-handler";
 import { expect, test } from "@/fixtures/api-fixture";
+import { APILogger } from "@/utils/logger";
 
 let authToken: string;
 
@@ -25,6 +26,21 @@ test("Get Article", async ({ api }) => {
 
   console.log(response);
   expect(response.articles.length).toBeLessThanOrEqual(10);
+});
+
+test("logger", () => {
+  const logger = new APILogger();
+  logger.logRequest(
+    "Get",
+    "https://example.com/",
+    { Authorization: "Token" },
+    { data: "value" },
+  );
+
+  logger.logResponse(200, { data: "value", id: "AA0X99L45JJOKP0234" });
+
+  const logs = logger.getRecentLogs();
+  console.log(logs);
 });
 
 test("Create and Delete Article", async ({ api }) => {
