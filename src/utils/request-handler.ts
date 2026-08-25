@@ -65,4 +65,34 @@ export class RequestHandler {
     const responseJSON = await response.json();
     return responseJSON;
   }
+
+  async postRequest(statusCode: number) {
+    const url = this.getUrl();
+    const response = await this.request.post(url, {
+      headers: this.apiHeaders,
+      data: this.apiBody,
+    });
+    expect(response.status()).toEqual(statusCode);
+    const responseJSON = await response.json();
+    return responseJSON;
+  }
+
+  async putRequest(statusCode: number) {
+    const url = this.getUrl();
+    const response = await this.request.put(url, {
+      headers: this.apiHeaders,
+      data: this.apiBody,
+    });
+    expect(response.status()).toEqual(statusCode);
+    const responseJSON = await response.json();
+    return responseJSON;
+  }
+
+  async delRequest(statusCode: number) {
+    const url = this.getUrl();
+    const response = await this.request.delete(url, {
+      headers: this.apiHeaders,
+    });
+    expect(response.status()).toEqual(statusCode);
+  }
 }
