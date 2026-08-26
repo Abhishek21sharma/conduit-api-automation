@@ -1,5 +1,6 @@
 import { APIRequestContext } from "playwright";
 import { expect } from "playwright/test";
+import { APILogger } from "./logger";
 
 export class RequestHandler {
   private request: APIRequestContext;
@@ -9,10 +10,16 @@ export class RequestHandler {
   private queryParams: object = {};
   private apiHeaders: Record<string, string> = {};
   private apiBody: object = {};
+  private logger: APILogger;
 
-  constructor(request: APIRequestContext, apiBaseUrl: string) {
+  constructor(
+    request: APIRequestContext,
+    apiBaseUrl: string,
+    logger: APILogger,
+  ) {
     this.request = request;
     this.defaultBaseURL = apiBaseUrl;
+    this.logger = logger;
   }
 
   url(url: string) {
@@ -58,11 +65,14 @@ export class RequestHandler {
    */
   async getRequest(statusCode: number) {
     const url = this.getUrl();
+    this.logger.logRequest("GET", url, this.apiHeaders);
     const response = await this.request.get(url, {
       headers: this.apiHeaders,
     });
-    expect(response.status()).toEqual(statusCode);
+    const actualStatus = response.status();
     const responseJSON = await response.json();
+    this.logger.logResponse(actualStatus, responseJSON);
+    expect(actualStatus).toEqual(statusCode);
     return responseJSON;
   }
 
