@@ -4,13 +4,13 @@ import { APILogger } from "@/utils/logger";
 
 let authToken: string;
 
-test.beforeAll("Get Token", async ({ api }) => {
+test.beforeAll("Get Token", async ({ api, Config }) => {
   const tokenResponse = await api
     .path("/users/login")
     .body({
       user: {
-        email: "abhishek.sharma211093@gmail.com",
-        password: "Test12345",
+        email: Config.userEmail,
+        password: Config.userPwd,
       },
     })
     .postRequest(200);
@@ -22,7 +22,7 @@ test("Get Article", async ({ api }) => {
   const response = await api
     .path("/articles")
     .params({ limit: 10, offset: 0 })
-    .getRequest(201);
+    .getRequest(200);
 
   console.log(response);
   expect(response.articles.length).toBeLessThanOrEqual(10);

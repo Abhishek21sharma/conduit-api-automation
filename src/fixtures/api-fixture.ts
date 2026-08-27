@@ -1,9 +1,11 @@
 import { APILogger } from "@/utils/logger";
 import { RequestHandler } from "@/utils/request-handler";
 import { test as base, expect } from "@playwright/test";
+import { config } from "../../api-test.config";
 
 export type TestOptions = {
   api: RequestHandler;
+  Config: typeof config;
 };
 
 export const test = base.extend<TestOptions>({
@@ -12,6 +14,9 @@ export const test = base.extend<TestOptions>({
     const logger = new APILogger();
     const requestHandler = new RequestHandler(request, baseURL, logger);
     await use(requestHandler);
+  },
+  Config: async ({}, use) => {
+    await use(config);
   },
 });
 

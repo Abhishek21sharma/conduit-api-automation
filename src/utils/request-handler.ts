@@ -72,37 +72,70 @@ export class RequestHandler {
     const actualStatus = response.status();
     const responseJSON = await response.json();
     this.logger.logResponse(actualStatus, responseJSON);
-    expect(actualStatus).toEqual(statusCode);
+    this.statusCodeValidator(actualStatus, statusCode, this.getRequest);
     return responseJSON;
   }
 
   async postRequest(statusCode: number) {
     const url = this.getUrl();
+    this.logger.logRequest("POST", url, this.apiHeaders, this.apiBody);
     const response = await this.request.post(url, {
       headers: this.apiHeaders,
       data: this.apiBody,
     });
-    expect(response.status()).toEqual(statusCode);
+    const actualStatus = response.status();
     const responseJSON = await response.json();
+    this.logger.logResponse(actualStatus, responseJSON);
+    this.statusCodeValidator(actualStatus, statusCode, this.postRequest);
     return responseJSON;
   }
 
   async putRequest(statusCode: number) {
     const url = this.getUrl();
+    this.logger.logRequest("PUT", url, this.apiHeaders, this.apiBody);
     const response = await this.request.put(url, {
       headers: this.apiHeaders,
       data: this.apiBody,
     });
-    expect(response.status()).toEqual(statusCode);
+    const actualStatus = response.status();
     const responseJSON = await response.json();
+    this.logger.logResponse(actualStatus, responseJSON);
+    this.statusCodeValidator(actualStatus, statusCode, this.putRequest);
     return responseJSON;
   }
 
   async delRequest(statusCode: number) {
     const url = this.getUrl();
+    this.logger.logRequest("DEL", url, this.apiHeaders);
     const response = await this.request.delete(url, {
       headers: this.apiHeaders,
     });
-    expect(response.status()).toEqual(statusCode);
+    this.logger.logResponse(response.status());
+    const actualStatus = response.status();
+    this.statusCodeValidator(actualStatus, statusCode, this.delRequest);
+  }
+
+  /**
+   * @description custome method for validations
+   * @param actualStatus
+   * @param expectedStatus
+   * @param callingMethod
+   */
+  private statusCodeValidator(
+    actualStatus: number,
+    expectedStatus: number,
+    callingMethod: Function,
+  ) {
+    if (actualStatus !== expectedStatus) {
+      const logs = this.logger.getRecentLogs();
+      //this will be used to upload to playwright report automatically..
+      const error = new Error(
+        `Expected status ${expectedStatus} but got ${actualStatus}\n\nRecent API logs: \n ${logs}`,
+      );
+      //this line will point to the calling methods..
+      Error.captureStackTrace(error, callingMethod);
+      //we have to throw the error
+      throw error;
+    }
   }
 }
