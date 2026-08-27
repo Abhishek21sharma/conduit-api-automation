@@ -1,21 +1,12 @@
 import { RequestHandler } from "@/utils/request-handler";
 import { expect, test } from "@/fixtures/api-fixture";
 import { APILogger } from "@/utils/logger";
+import { createToken } from "@/helpers/create-token";
 
 let authToken: string;
 
 test.beforeAll("Get Token", async ({ api, Config }) => {
-  const tokenResponse = await api
-    .path("/users/login")
-    .body({
-      user: {
-        email: Config.userEmail,
-        password: Config.userPwd,
-      },
-    })
-    .postRequest(200);
-
-  authToken = "Token " + tokenResponse.user.token;
+  authToken = await createToken(Config.userEmail, Config.userPwd);
 });
 
 test("Get Article", async ({ api }) => {
