@@ -3,11 +3,11 @@ import { expect, test } from "@/fixtures/api-fixture";
 import { APILogger } from "@/utils/logger";
 import { createToken } from "@/helpers/create-token";
 
-let authToken: string;
+// let authToken: string;
 
-test.beforeAll("Get Token", async ({ api, Config }) => {
-  authToken = await createToken(Config.userEmail, Config.userPwd);
-});
+// test.beforeAll("Get Token", async ({ api, Config }) => {
+//   authToken = await createToken(Config.userEmail, Config.userPwd);
+// });
 
 test("Get Article", async ({ api }) => {
   const response = await api
@@ -37,7 +37,7 @@ test("logger", () => {
 test("Create and Delete Article", async ({ api }) => {
   const createArticleResponse = await api
     .path("/articles")
-    .headers({ Authorization: authToken })
+    //.headers({ Authorization: authToken }) --> this is by default handled in the request
     .body({
       article: {
         title: "Name1",
@@ -53,7 +53,7 @@ test("Create and Delete Article", async ({ api }) => {
 
   const articleResponse = await api
     .path("/articles")
-    .headers({ Authorization: authToken })
+    // .headers({ Authorization: authToken }) --> by default handled in the request
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
 
@@ -63,12 +63,12 @@ test("Create and Delete Article", async ({ api }) => {
 
   await api
     .path(`/articles/${slugId}`)
-    .headers({ Authorization: authToken })
+    //.headers({ Authorization: authToken }) --> by default handled in the request
     .delRequest(204);
 
   const articleResponseTwo = await api
     .path("/articles")
-    .headers({ Authorization: authToken })
+    // .headers({ Authorization: authToken }) --> by default handled in the request
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
 

@@ -1,5 +1,5 @@
 import { APIRequestContext } from "playwright";
-import { expect } from "playwright/test";
+import { test } from "playwright/test";
 import { APILogger } from "./logger";
 
 export class RequestHandler {
@@ -11,15 +11,27 @@ export class RequestHandler {
   private apiHeaders: Record<string, string> = {};
   private apiBody: object = {};
   private logger: APILogger;
+  private defaultAuthToken: string;
+  private clearAuthFlag: boolean = false;
 
+  /**
+   *
+   * @param request
+   * @param apiBaseUrl
+   * @param logger
+   * @param authTOken : additional token param (Non mandatory) added later to compensate passing
+   * token directly to different API methods
+   */
   constructor(
     request: APIRequestContext,
     apiBaseUrl: string,
     logger: APILogger,
+    authTOken: string = "",
   ) {
     this.request = request;
     this.defaultBaseURL = apiBaseUrl;
     this.logger = logger;
+    this.defaultAuthToken = authTOken;
   }
 
   url(url: string) {
@@ -40,6 +52,10 @@ export class RequestHandler {
   }
   body(body: object) {
     this.apiBody = body;
+    return this;
+  }
+  clearAuth() {
+    this.clearAuthFlag = true;
     return this;
   }
 
@@ -65,23 +81,29 @@ export class RequestHandler {
    */
   async getRequest(statusCode: number) {
     const url = this.getUrl();
-    this.logger.logRequest("GET", url, this.apiHeaders);
-    const response = await this.request.get(url, {
-      headers: this.apiHeaders,
+    let responseJSON: any;
+
+    //BEST PRACTICE FOR BETTER REPORTING
+    await test.step(`Get Request call ${url}`, async () => {
+      this.logger.logRequest("GET", url, this.getHeaders());
+      const response = await this.request.get(url, {
+        headers: this.getHeaders(),
+      });
+      this.cleanupFields();
+      const actualStatus = response.status();
+      responseJSON = await response.json();
+      this.logger.logResponse(actualStatus, responseJSON);
+      this.statusCodeValidator(actualStatus, statusCode, this.getRequest);
     });
-    this.cleanupFields();
-    const actualStatus = response.status();
-    const responseJSON = await response.json();
-    this.logger.logResponse(actualStatus, responseJSON);
-    this.statusCodeValidator(actualStatus, statusCode, this.getRequest);
+
     return responseJSON;
   }
 
   async postRequest(statusCode: number) {
     const url = this.getUrl();
-    this.logger.logRequest("POST", url, this.apiHeaders, this.apiBody);
+    this.logger.logRequest("POST", url, this.getHeaders(), this.apiBody);
     const response = await this.request.post(url, {
-      headers: this.apiHeaders,
+      headers: this.getHeaders(),
       data: this.apiBody,
     });
     this.cleanupFields();
@@ -144,11 +166,20 @@ export class RequestHandler {
     }
   }
 
+  private getHeaders() {
+    if (!this.clearAuthFlag) {
+      this.apiHeaders["Authorization"] =
+        this.apiHeaders["Authorization"] || this.defaultAuthToken;
+    }
+    return this.apiHeaders;
+  }
+
   private cleanupFields() {
     this.apiBody = {};
     this.apiHeaders = {};
     this.baseURL = undefined;
     this.apiPath = "";
     this.queryParams = {};
+    this.clearAuthFlag = false;
   }
 }
