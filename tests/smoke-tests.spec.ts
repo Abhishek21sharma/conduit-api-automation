@@ -2,6 +2,7 @@ import { RequestHandler } from "@/utils/request-handler";
 import { expect, test } from "@/fixtures/api-fixture";
 import { APILogger } from "@/utils/logger";
 import { createToken } from "@/helpers/create-token";
+import articleRequestPayload from "@/request-objects/post-article.json";
 
 // let authToken: string;
 
@@ -35,17 +36,17 @@ test("logger", () => {
 });
 
 test("Create and Delete Article", async ({ api }) => {
+  //for Ci stablity - best to create it's own object
+  const dataRequest = JSON.parse(JSON.stringify(articleRequestPayload));
+  dataRequest.article.title = "updated title";
+
+  //or we can use this: DOT operation will work good
+  const dataRequestUpdated = structuredClone(articleRequestPayload);
+  dataRequestUpdated.article.title = "updated title";
   const createArticleResponse = await api
     .path("/articles")
     //.headers({ Authorization: authToken }) --> this is by default handled in the request
-    .body({
-      article: {
-        title: "Name1",
-        description: "It's a test article",
-        body: "this will be created in flight by playwright automation..",
-        tagList: ["EarlyBirds"],
-      },
-    })
+    .body(articleRequestPayload)
     .postRequest(201);
 
   expect(createArticleResponse.article.title).toEqual("Name1");

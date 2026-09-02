@@ -1,0 +1,8 @@
+{
+  "article": {
+    "title": "Name1",
+    "description": "It's a test article",
+    "body": "this will be created in flight by playwright automation..",
+    "tagList": ["EarlyBirds"]
+  }
+}
