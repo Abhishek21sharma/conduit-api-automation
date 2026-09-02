@@ -83,7 +83,7 @@ export class RequestHandler {
     const url = this.getUrl();
     let responseJSON: any;
 
-    //BEST PRACTICE FOR BETTER REPORTING
+    //BEST PRACTICE ---> FOR BETTER REPORTING (to add test.step())
     await test.step(`Get Request call ${url}`, async () => {
       this.logger.logRequest("GET", url, this.getHeaders());
       const response = await this.request.get(url, {
