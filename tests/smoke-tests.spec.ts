@@ -3,6 +3,8 @@ import { expect, test } from "@/fixtures/api-fixture";
 import { APILogger } from "@/utils/logger";
 import { createToken } from "@/helpers/create-token";
 import articleRequestPayload from "@/request-objects/post-article.json";
+import { faker } from "@faker-js/faker";
+import { getNewRandomArticle } from "@/utils/data-generator";
 
 // let authToken: string;
 
@@ -36,6 +38,7 @@ test("logger", () => {
 });
 
 test("Create and Delete Article", async ({ api }) => {
+  const articleTile = faker.lorem.sentence(5);
   //for Ci stablity - best to create it's own object
   const dataRequest = JSON.parse(JSON.stringify(articleRequestPayload));
   dataRequest.article.title = "updated title";
@@ -74,4 +77,24 @@ test("Create and Delete Article", async ({ api }) => {
     .getRequest(200);
 
   expect(articleResponseTwo.articles[0].title).not.toEqual("Name1");
+});
+
+test("faker useage", async ({ api }) => {
+  const request = getNewRandomArticle();
+  const createArticleResponse = await api
+    .path("/articles")
+    .body(request)
+    .postRequest(201);
+
+  expect(createArticleResponse.article.title).toBe(request.article.title);
+  const slugID = createArticleResponse.article.slug;
+
+  const articleResponse = await api
+    .path("/articles")
+    .params({ limit: 10, offset: 0 })
+    .getRequest(200);
+
+  expect(articleResponse.articles[0].title).toBe(request.article.title);
+
+  await api.path(`/articles/${slugID}`).delRequest(204);
 });
