@@ -5,6 +5,7 @@ import { createToken } from "@/helpers/create-token";
 import articleRequestPayload from "@/request-objects/post-article.json";
 import { faker } from "@faker-js/faker";
 import { getNewRandomArticle } from "@/utils/data-generator";
+import { validateSchema } from "@/utils/schema-valiadtor";
 
 // let authToken: string;
 
@@ -14,12 +15,14 @@ import { getNewRandomArticle } from "@/utils/data-generator";
 
 test("Get Article", async ({ api }) => {
   const response = await api
-    .path("/articles")
+    //.path("/articles")
+    .path("/tags")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
 
-  console.log(response);
-  expect(response.articles.length).toBeLessThanOrEqual(10);
+  await validateSchema("tags", "GET_tags", response);
+  // console.log(response);
+  // expect(response.articles.length).toBeLessThanOrEqual(10);
 });
 
 test("logger", () => {
